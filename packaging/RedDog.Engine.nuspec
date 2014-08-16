@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">    
+    <id>@project@</id>
+    <version>@build.number@</version>
+    <authors>@authors@</authors>
+    <owners>@authors@</owners>
+    <summary>@summary@</summary>
+    <licenseUrl>https://github.com/reddog-io/RedDog.Engine/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/reddog-io/RedDog.Engine</projectUrl>
+    <iconUrl>http://reddog.io/img/reddog-60px.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>@description@</description>
+    <releaseNotes>@releaseNotes@</releaseNotes>
+    <tags>Microsoft, Azure, Worker Role, Scheduler, Jobs, Tasks</tags>
+    <copyright>Copyright 2014 (c) Sandrino Di Mattia</copyright>
+	<dependencies>
+      <group targetFramework=".NETFramework4.0-Client">
+        <dependency id="Rx-Linq" version="2.2.4" />
+      </group>
+      <group targetFramework=".NETFramework4.0-Client">
+        <dependency id="Rx-Interfaces" version="2.2.4" />
+      </group>
+      <group targetFramework=".NETFramework4.0-Client">
+        <dependency id="Rx-Core" version="2.2.4" />
+      </group>
+    </dependencies>
+    <references>
+		<group targetFramework=".NETFramework4.0-Client">
+			<reference file="RedDog.Engine.dll" />
+		</group>
+	</references>
+  </metadata>
+  <files>
+    <file src="lib\net40\RedDog.Engine.dll" target="lib\net40" />
+  </files>
+</package>
