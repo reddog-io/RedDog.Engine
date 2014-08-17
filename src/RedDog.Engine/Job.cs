@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 using RedDog.Engine.Diagnostics;
 
@@ -11,6 +12,12 @@ namespace RedDog.Engine
             get { return GetType().Name; }
         }
 
+        public Guid RunId
+        {
+            get;
+            set;
+        }
+
         public virtual TimeSpan Interval
         {
             get { return TimeSpan.FromDays(1); }
@@ -21,34 +28,68 @@ namespace RedDog.Engine
         {
             get { return TimeSpan.Zero; }
         }
-        
+
+        public IJobEventContext EventContext
+        {
+            get;
+            internal set;
+        }
+
+        public CancellationToken CancellationToken
+        {
+            get;
+            internal set;
+        }
+
         public virtual void Initialize()
         {
 
         }
 
-        public void Execute(ITask task, bool throwOnError = false)
+        /// <summary>
+        /// Execute a task.
+        /// </summary>
+        /// <param name="task"></param>
+        public void Execute(JobTask task)
         {
-            JobsEventSource.Log.TaskExecuting(task.GetType().Name);
-
             var startTime = DateTime.UtcNow;
 
             try
             {
+                // Log.
+                EngineEventSource.Log.Verbose("Executing task '{0}' at {1}.", task.GetType().Name, startTime);
+
+                // Send out event.
+                EventContext.TaskRunning(this, task, startTime);
+
+                // Execute the task.
+                task.Job = this;
+                task.CancellationToken = CancellationToken;
                 task.Execute();
 
-                JobsEventSource.Log.TaskExecuted(task.GetType().Name, (DateTime.UtcNow - startTime).ToString());
+                // Calculate duration.
+                var duration = DateTime.UtcNow - startTime;
+
+                // Send out event.
+                EventContext.TaskComplete(this, task, startTime, duration);
+
+                // Log complete.
+                EngineEventSource.Log.Verbose("Executed task '{0}' in {1}.", task.GetType().Name, duration.ToString());
             }
             catch (Exception ex)
             {
-                JobsEventSource.Log.TaskExecutionError(task.GetType().Name, ex.GetType().Name, ex.Message, ex.StackTrace);
+                EventContext.TaskFailed(this, task, startTime, ex);
 
-                // Make sure the exception bubbles up and stops the execution of other tasks.
-                if (throwOnError)
-                    throw;
+                // Log.
+                EngineEventSource.Log.ErrorDetails(ex, "Error executing task '{0}'", task.GetType().Name);
+
+                throw;
             }
         }
 
-        public abstract void RunOnce();
+        /// <summary>
+        /// Run the job.
+        /// </summary>
+        public abstract void Run();
     }
 }
